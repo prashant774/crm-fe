@@ -4,6 +4,25 @@ React 18 single-page application for a CRM sales analytics dashboard. Connects t
 
 ---
 
+## Screenshots
+
+### Dashboard — KPI Cards & Ask AI
+![Dashboard KPI Cards and Ask AI](screenshots/01-dashboard-kpi-askai.png)
+
+### Dashboard — Charts Overview
+![Dashboard Charts Section](screenshots/02-dashboard-charts.png)
+
+### Charts — Products, Sales Reps & Region Breakdown
+![Lower Charts Section](screenshots/03-charts-lower.png)
+
+### Quick Reports Table
+![Quick Reports Paginated Table](screenshots/04-quick-reports-table.png)
+
+### Ask AI — Chat Response
+![Ask AI Chat Response](screenshots/05-askai-response.png)
+
+---
+
 ## Tech Stack
 
 | Tool          | Purpose                         |

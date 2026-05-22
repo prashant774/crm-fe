@@ -3,6 +3,7 @@ import { MdDashboard } from "react-icons/md";
 import { FiSettings, FiLogOut } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { setActiveTab } from "../../store/uiSlice";
+import { logout } from "../../store/authSlice";
 import styles from "./Sidebar.module.css";
 
 export default function Sidebar() {
@@ -50,7 +51,7 @@ export default function Sidebar() {
       <div className={styles.bottom}>
         <button
           className={styles.logout}
-          onClick={() => console.log("logout")}
+          onClick={() => dispatch(logout())}
           type="button"
           title="Logout"
         >

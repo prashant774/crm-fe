@@ -1,0 +1,125 @@
+/* ── Sidebar shell ─────────────────────────────────────────── */
+.sidebar {
+  width: 72px;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0 16px;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  margin: 30px;
+  border-radius: 10px;
+}
+
+/* ── Logo ───────────────────────────────────────────────────── */
+.top {
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #f97316 0deg,
+    #ec4899 90deg,
+    #8b5cf6 180deg,
+    #3b82f6 270deg,
+    #f97316 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+/* ── Nav ────────────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+  width: 100%;
+  padding: 0 12px;
+}
+
+.sidebarItem {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.sidebarItem:hover {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.active:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+/* Icon wrapper */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Labels always hidden — icon-only sidebar */
+.label {
+  display: none;
+}
+
+/* ── Bottom / Logout ────────────────────────────────────────── */
+.bottom {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px 4px;
+}
+
+.logout {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.logout:hover {
+  background: #fef2f2;
+  color: #ef4444;
+}

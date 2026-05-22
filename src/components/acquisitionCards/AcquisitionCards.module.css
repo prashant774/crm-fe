@@ -1,0 +1,75 @@
+/* ── Section wrapper ─────────────────────────────────────────── */
+.section {
+  margin-top: 28px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid #1d1d1e;
+}
+
+/* ── Card grid ───────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+/* ── Individual card ─────────────────────────────────────────── */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.07);
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.1);
+  transform: translateY(-2px);
+}
+
+/* ── Icon circle ─────────────────────────────────────────────── */
+.iconWrap {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Text block ──────────────────────────────────────────────── */
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value {
+  font-size: 19px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  white-space: nowrap;
+}

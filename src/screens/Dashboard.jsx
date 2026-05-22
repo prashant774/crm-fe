@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { FiCheck, FiX } from "react-icons/fi";
 import Sidebar from "../components/sidebar/Sidebar";
 import AcquisitionCards from "../components/acquisitionCards/AcquisitionCards";
+import ChartsSection from "../components/chartsSection/ChartsSection";
 import styles from "../style/Dashboard.module.css";
 
 export default function Dashboard() {
@@ -67,6 +68,7 @@ export default function Dashboard() {
             </div>
           </div>
           <AcquisitionCards />
+          <ChartsSection />
         </div>
       </main>
     </div>

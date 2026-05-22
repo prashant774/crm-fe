@@ -11,8 +11,8 @@ export default function Dashboard() {
   const activeTab = useSelector((state) => state.ui.activeTab);
 
   const today = new Date().toISOString().split("T")[0];
-  const [fromDate, setFromDate] = useState("2022-06-08");
-  const [toDate, setToDate] = useState("2022-07-21");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [applied, setApplied] = useState(false);
 
   const handleApply = () => setApplied(true);

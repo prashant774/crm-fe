@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import styles from "./ReportsTable.module.css";
 
 /* ── Hardcoded sample data (7 rows from CSV) ─────────────────── */
@@ -77,6 +77,7 @@ const RAW_DATA = [
 
 /* ── Config ──────────────────────────────────────────────────── */
 const REGIONS = ["All", "North", "South", "East", "West"];
+const PAGE_SIZE = 3;
 
 const REGION_STYLE = {
   North: { bg: "#f0fdf4", color: "#16a34a", dot: "#16a34a" },
@@ -143,6 +144,12 @@ function avatarColor(name) {
 /* ── Component ───────────────────────────────────────────────── */
 export default function ReportsTable({ fromDate, toDate }) {
   const [regionFilter, setRegionFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  /* Reset to page 1 whenever filters change */
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [regionFilter, fromDate, toDate]);
 
   const filtered = useMemo(() => {
     const from = parseInputDate(fromDate);
@@ -155,6 +162,15 @@ export default function ReportsTable({ fromDate, toDate }) {
       return true;
     });
   }, [regionFilter, fromDate, toDate]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageRows = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+  const firstIdx =
+    filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const lastIdx = Math.min(currentPage * PAGE_SIZE, filtered.length);
 
   return (
     <section className={styles.section}>
@@ -192,6 +208,7 @@ export default function ReportsTable({ fromDate, toDate }) {
             <span className={styles.countBadge}>
               {filtered.length} / {RAW_DATA.length} records
             </span>
+            <span className={styles.pageSizeBadge}>{PAGE_SIZE} per page</span>
           </div>
         </div>
 
@@ -218,7 +235,7 @@ export default function ReportsTable({ fromDate, toDate }) {
                   </td>
                 </tr>
               ) : (
-                filtered.map((row) => {
+                pageRows.map((row) => {
                   const rs = REGION_STYLE[row.region];
                   const cs = CATEGORY_STYLE[row.category];
                   const color = avatarColor(row.rep);
@@ -287,21 +304,62 @@ export default function ReportsTable({ fromDate, toDate }) {
           </table>
         </div>
 
-        {/* Footer summary */}
-        {filtered.length > 0 && (
-          <div className={styles.footer}>
-            <span>
-              Total Sales:{" "}
-              <strong>
-                {fmtAmount(filtered.reduce((s, r) => s + r.amount, 0))}
-              </strong>
-            </span>
-            <span>
-              Total Units:{" "}
-              <strong>{filtered.reduce((s, r) => s + r.units, 0)}</strong>
-            </span>
-          </div>
-        )}
+        {/* Footer: pagination + summary */}
+        <div className={styles.footer}>
+          {/* Left — record info */}
+          <span className={styles.footerInfo}>
+            {filtered.length === 0
+              ? "No records"
+              : `Showing ${firstIdx}–${lastIdx} of ${filtered.length} records`}
+          </span>
+
+          {/* Centre — page controls */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                className={styles.pageArrow}
+                onClick={() => setCurrentPage((p) => p - 1)}
+                disabled={currentPage === 1}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  className={`${styles.pageBtn} ${
+                    p === currentPage ? styles.pageBtnActive : ""
+                  }`}
+                  onClick={() => setCurrentPage(p)}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                className={styles.pageArrow}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={currentPage === totalPages}
+              >
+                ›
+              </button>
+            </div>
+          )}
+
+          {/* Right — totals */}
+          {filtered.length > 0 && (
+            <div className={styles.footerTotals}>
+              <span>
+                Total Sales:{" "}
+                <strong>
+                  {fmtAmount(filtered.reduce((s, r) => s + r.amount, 0))}
+                </strong>
+              </span>
+              <span>
+                Units:{" "}
+                <strong>{filtered.reduce((s, r) => s + r.units, 0)}</strong>
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

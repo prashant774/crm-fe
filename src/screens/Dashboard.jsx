@@ -4,6 +4,7 @@ import { FiCheck, FiX } from "react-icons/fi";
 import Sidebar from "../components/sidebar/Sidebar";
 import AcquisitionCards from "../components/acquisitionCards/AcquisitionCards";
 import ChartsSection from "../components/chartsSection/ChartsSection";
+import ReportsTable from "../components/reportsTable/ReportsTable";
 import styles from "../style/Dashboard.module.css";
 
 export default function Dashboard() {
@@ -69,6 +70,7 @@ export default function Dashboard() {
           </div>
           <AcquisitionCards />
           <ChartsSection />
+          <ReportsTable fromDate={fromDate} toDate={toDate} />
         </div>
       </main>
     </div>

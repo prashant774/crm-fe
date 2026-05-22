@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -15,90 +15,76 @@ import {
   Line,
 } from "recharts";
 import styles from "./ChartsSection.module.css";
+import {
+  fetchByRegion,
+  fetchByCategory,
+  fetchTrends,
+  fetchTopProducts,
+  fetchTopReps,
+  fetchRegionCategory,
+} from "../../services/api";
 
-/* ── Hardcoded data (from CSV dataset) ──────────────────────── */
-
-const salesByRegion = [
-  { region: "South", sales: 168450 },
-  { region: "West", sales: 155320 },
-  { region: "East", sales: 149870 },
-  { region: "North", sales: 145210 },
-];
-
-const salesByCategory = [
-  { name: "Electronics", value: 338240 },
-  { name: "Furniture", value: 280610 },
-];
+/* ── Constants ───────────────────────────────────────────────── */
 const CATEGORY_COLORS = ["#3b82f6", "#10b981"];
-
-const monthlySales = [
-  { month: "Jan", sales: 47200 },
-  { month: "Feb", sales: 43800 },
-  { month: "Mar", sales: 51600 },
-  { month: "Apr", sales: 53900 },
-  { month: "May", sales: 62400 },
-  { month: "Jun", sales: 58700 },
-  { month: "Jul", sales: 64300 },
-  { month: "Aug", sales: 59100 },
-  { month: "Sep", sales: 55800 },
-  { month: "Oct", sales: 61200 },
-  { month: "Nov", sales: 58900 },
-  { month: "Dec", sales: 57850 },
-];
-
-const salesByProduct = [
-  { product: "Laptop", sales: 96240 },
-  { product: "Sofa", sales: 87350 },
-  { product: "Phone", sales: 72180 },
-  { product: "Desk", sales: 58920 },
-  { product: "Cabinet", sales: 43650 },
-  { product: "Tablet", sales: 41280 },
-  { product: "Monitor", sales: 38470 },
-  { product: "Bookshelf", sales: 31240 },
-  { product: "Chair", sales: 26880 },
-  { product: "Printer", sales: 22640 },
-];
-
-const topSalesReps = [
-  { name: "Patrick Valdez", revenue: 42800 },
-  { name: "Rebecca Haas", revenue: 38200 },
-  { name: "T. Valenzuela", revenue: 35600 },
-  { name: "Brian Guzman", revenue: 33400 },
-  { name: "Kevin Harvey", revenue: 31200 },
-  { name: "Tara Lang", revenue: 29800 },
-];
-
-const regionCategory = [
-  { region: "South", Electronics: 89300, Furniture: 79100 },
-  { region: "West", Electronics: 80500, Furniture: 74800 },
-  { region: "East", Electronics: 72600, Furniture: 77200 },
-  { region: "North", Electronics: 78400, Furniture: 68200 },
-];
-
-/* ── Helpers ─────────────────────────────────────────────────── */
-
 const formatK = (v) => `$${(v / 1000).toFixed(0)}K`;
 const MARGIN = { top: 10, right: 12, left: 0, bottom: 0 };
 
-function ChartCard({ title, children }) {
+function ChartCard({ title, loading, children }) {
   return (
     <div className={styles.card}>
       <h4 className={styles.cardTitle}>{title}</h4>
-      <div className={styles.chartArea}>{children}</div>
+      <div className={styles.chartArea}>
+        {loading ? <div className={styles.loading}>Loading…</div> : children}
+      </div>
     </div>
   );
 }
 
 /* ── Main component ──────────────────────────────────────────── */
+export default function ChartsSection({ fromDate, toDate }) {
+  const [loading, setLoading] = useState(true);
+  const [byRegion, setByRegion] = useState([]);
+  const [byCategory, setByCategory] = useState([]);
+  const [trends, setTrends] = useState([]);
+  const [byProduct, setByProduct] = useState([]);
+  const [topReps, setTopReps] = useState([]);
+  const [regionCategory, setRegionCategory] = useState([]);
 
-export default function ChartsSection() {
+  useEffect(() => {
+    setLoading(true);
+    const p = { from: fromDate, to: toDate };
+
+    Promise.all([
+      fetchByRegion(p),
+      fetchByCategory(p),
+      fetchTrends(p),
+      fetchTopProducts(p),
+      fetchTopReps(p),
+      fetchRegionCategory(p),
+    ])
+      .then(([reg, cat, tr, prod, reps, rc]) => {
+        setByRegion(
+          reg.map((d) => ({ region: d.region, sales: d.totalSales })),
+        );
+        setByCategory(cat);
+        setTrends(tr.map((d) => ({ month: d.month, sales: d.totalSales })));
+        setByProduct(
+          prod.map((d) => ({ product: d.product, sales: d.totalSales })),
+        );
+        setTopReps(reps);
+        setRegionCategory(rc);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [fromDate, toDate]);
+
   return (
     <section className={styles.section}>
       <div className={styles.grid}>
         {/* 1 · Sales by Region — Vertical Bar */}
-        <ChartCard title="Sales by Region">
+        <ChartCard title="Sales by Region" loading={loading}>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={salesByRegion} margin={MARGIN}>
+            <BarChart data={byRegion} margin={MARGIN}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis
                 dataKey="region"
@@ -124,11 +110,11 @@ export default function ChartsSection() {
         </ChartCard>
 
         {/* 2 · Sales by Category — Donut/Pie */}
-        <ChartCard title="Sales by Category">
+        <ChartCard title="Sales by Category" loading={loading}>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
-                data={salesByCategory}
+                data={byCategory}
                 cx="50%"
                 cy="42%"
                 innerRadius={55}
@@ -136,8 +122,11 @@ export default function ChartsSection() {
                 paddingAngle={3}
                 dataKey="value"
               >
-                {salesByCategory.map((_, i) => (
-                  <Cell key={i} fill={CATEGORY_COLORS[i]} />
+                {byCategory.map((_, i) => (
+                  <Cell
+                    key={i}
+                    fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Legend iconType="circle" iconSize={10} />
@@ -147,9 +136,9 @@ export default function ChartsSection() {
         </ChartCard>
 
         {/* 3 · Monthly Sales Trend — Line */}
-        <ChartCard title="Monthly Sales Trend">
+        <ChartCard title="Monthly Sales Trend" loading={loading}>
           <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={monthlySales} margin={MARGIN}>
+            <LineChart data={trends} margin={MARGIN}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
               <XAxis
                 dataKey="month"
@@ -177,10 +166,10 @@ export default function ChartsSection() {
         </ChartCard>
 
         {/* 4 · Sales by Product — Horizontal Bar */}
-        <ChartCard title="Sales by Product">
+        <ChartCard title="Sales by Product" loading={loading}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
-              data={salesByProduct}
+              data={byProduct}
               layout="vertical"
               margin={{ top: 4, right: 20, left: 58, bottom: 0 }}
             >
@@ -212,10 +201,10 @@ export default function ChartsSection() {
         </ChartCard>
 
         {/* 5 · Top Sales Reps — Horizontal Bar */}
-        <ChartCard title="Top Sales Reps by Revenue">
+        <ChartCard title="Top Sales Reps by Revenue" loading={loading}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
-              data={topSalesReps}
+              data={topReps}
               layout="vertical"
               margin={{ top: 4, right: 20, left: 80, bottom: 0 }}
             >
@@ -249,7 +238,7 @@ export default function ChartsSection() {
         </ChartCard>
 
         {/* 6 · Region × Category — Stacked Bar */}
-        <ChartCard title="Sales by Region &amp; Category">
+        <ChartCard title="Sales by Region &amp; Category" loading={loading}>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={regionCategory} margin={MARGIN}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />

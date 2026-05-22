@@ -10,16 +10,20 @@ import styles from "../style/Dashboard.module.css";
 export default function Dashboard() {
   const activeTab = useSelector((state) => state.ui.activeTab);
 
-  const today = new Date().toISOString().split("T")[0];
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [applied, setApplied] = useState(false);
+  const [appliedFrom, setAppliedFrom] = useState("");
+  const [appliedTo, setAppliedTo] = useState("");
 
-  const handleApply = () => setApplied(true);
+  const handleApply = () => {
+    setAppliedFrom(fromDate);
+    setAppliedTo(toDate);
+  };
   const handleClear = () => {
     setFromDate("");
     setToDate("");
-    setApplied(false);
+    setAppliedFrom("");
+    setAppliedTo("");
   };
 
   return (
@@ -68,9 +72,9 @@ export default function Dashboard() {
               )}
             </div>
           </div>
-          <AcquisitionCards />
-          <ChartsSection />
-          <ReportsTable fromDate={fromDate} toDate={toDate} />
+          <AcquisitionCards fromDate={appliedFrom} toDate={appliedTo} />
+          <ChartsSection fromDate={appliedFrom} toDate={appliedTo} />
+          <ReportsTable fromDate={appliedFrom} toDate={appliedTo} />
         </div>
       </main>
     </div>

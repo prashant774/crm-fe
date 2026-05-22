@@ -2,11 +2,8 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from "react-icons/fi";
 import { login } from "../store/authSlice";
+import { loginUser } from "../services/api";
 import styles from "../style/Login.module.css";
-
-/* ── Hardcoded credentials ───────────────────────────────────── */
-const VALID_EMAIL = "admin@crm.com";
-const VALID_PASSWORD = "admin123";
 
 export default function Login() {
   const dispatch = useDispatch();
@@ -26,15 +23,12 @@ export default function Login() {
     }
 
     setLoading(true);
-    /* Simulate a short async check */
-    setTimeout(() => {
-      if (email.trim() === VALID_EMAIL && password === VALID_PASSWORD) {
-        dispatch(login(email.trim()));
-      } else {
-        setError("Invalid email or password. Please try again.");
+    loginUser(email.trim(), password)
+      .then((data) => dispatch(login(data.email)))
+      .catch((err) => {
+        setError(err.error || "Invalid email or password. Please try again.");
         setLoading(false);
-      }
-    }, 700);
+      });
   }
 
   return (
@@ -125,11 +119,11 @@ export default function Login() {
           <span className={styles.hintLabel}>Demo credentials</span>
           <div className={styles.hintRow}>
             <span className={styles.hintKey}>Email</span>
-            <code className={styles.hintVal}>{VALID_EMAIL}</code>
+            <code className={styles.hintVal}>admin@crm.com</code>
           </div>
           <div className={styles.hintRow}>
             <span className={styles.hintKey}>Password</span>
-            <code className={styles.hintVal}>{VALID_PASSWORD}</code>
+            <code className={styles.hintVal}>admin123</code>
           </div>
         </div>
       </div>

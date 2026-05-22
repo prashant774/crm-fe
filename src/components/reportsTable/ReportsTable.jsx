@@ -1,83 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./ReportsTable.module.css";
-
-/* ── Hardcoded sample data (7 rows from CSV) ─────────────────── */
-const RAW_DATA = [
-  {
-    id: 1001,
-    date: "13-02-2024",
-    region: "West",
-    product: "Laptop",
-    category: "Electronics",
-    amount: 3809.61,
-    units: 3,
-    rep: "Matthew Craig",
-  },
-  {
-    id: 1008,
-    date: "18-01-2024",
-    region: "South",
-    product: "Desk",
-    category: "Furniture",
-    amount: 5960.24,
-    units: 8,
-    rep: "Johnathan Hall",
-  },
-  {
-    id: 1022,
-    date: "27-10-2024",
-    region: "South",
-    product: "Phone",
-    category: "Electronics",
-    amount: 6297.9,
-    units: 7,
-    rep: "Claire Fowler",
-  },
-  {
-    id: 1036,
-    date: "20-10-2024",
-    region: "West",
-    product: "Sofa",
-    category: "Furniture",
-    amount: 11756.16,
-    units: 9,
-    rep: "John Robinson",
-  },
-  {
-    id: 1059,
-    date: "27-10-2024",
-    region: "North",
-    product: "Phone",
-    category: "Electronics",
-    amount: 7347.4,
-    units: 10,
-    rep: "Patricia Dudley",
-  },
-  {
-    id: 1074,
-    date: "14-02-2024",
-    region: "East",
-    product: "Laptop",
-    category: "Electronics",
-    amount: 4392.84,
-    units: 3,
-    rep: "Cheryl Hill",
-  },
-  {
-    id: 1090,
-    date: "29-02-2024",
-    region: "South",
-    product: "Sofa",
-    category: "Furniture",
-    amount: 12952.3,
-    units: 10,
-    rep: "Austin Tucker",
-  },
-];
+import { fetchRaw } from "../../services/api";
 
 /* ── Config ──────────────────────────────────────────────────── */
 const REGIONS = ["All", "North", "South", "East", "West"];
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 10;
 
 const REGION_STYLE = {
   North: { bg: "#f0fdf4", color: "#16a34a", dot: "#16a34a" },
@@ -102,24 +29,10 @@ const AVATAR_COLORS = [
 ];
 
 /* ── Helpers ─────────────────────────────────────────────────── */
-
-/** "DD-MM-YYYY" → Date object */
-function parseCsvDate(str) {
-  const [d, m, y] = str.split("-");
-  return new Date(+y, +m - 1, +d);
-}
-
-/** "YYYY-MM-DD" → Date object, or null */
-function parseInputDate(str) {
-  if (!str) return null;
-  const [y, m, d] = str.split("-");
-  return new Date(+y, +m - 1, +d);
-}
-
 function fmtAmount(n) {
   return (
     "$" +
-    n.toLocaleString("en-US", {
+    Number(n).toLocaleString("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })
@@ -145,39 +58,46 @@ function avatarColor(name) {
 export default function ReportsTable({ fromDate, toDate }) {
   const [regionFilter, setRegionFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [rows, setRows] = useState([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 1,
+    totalSales: 0,
+    totalUnits: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
-  /* Reset to page 1 whenever filters change */
+  /* Reset to page 1 when filters change */
   useEffect(() => {
     setCurrentPage(1);
   }, [regionFilter, fromDate, toDate]);
 
-  const filtered = useMemo(() => {
-    const from = parseInputDate(fromDate);
-    const to = parseInputDate(toDate);
-    return RAW_DATA.filter((row) => {
-      if (regionFilter !== "All" && row.region !== regionFilter) return false;
-      const d = parseCsvDate(row.date);
-      if (from && d < from) return false;
-      if (to && d > to) return false;
-      return true;
-    });
-  }, [regionFilter, fromDate, toDate]);
+  /* Fetch whenever page or filters change */
+  useEffect(() => {
+    setLoading(true);
+    fetchRaw({
+      page: currentPage,
+      limit: PAGE_SIZE,
+      region: regionFilter !== "All" ? regionFilter : undefined,
+      from: fromDate || undefined,
+      to: toDate || undefined,
+    })
+      .then(({ data, pagination: pg }) => {
+        setRows(data);
+        setPagination(pg);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [currentPage, regionFilter, fromDate, toDate]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-  const firstIdx =
-    filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
-  const lastIdx = Math.min(currentPage * PAGE_SIZE, filtered.length);
+  const { total, totalPages, totalSales, totalUnits } = pagination;
+  const firstIdx = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+  const lastIdx = Math.min(currentPage * PAGE_SIZE, total);
 
   return (
     <section className={styles.section}>
-      {/* ── Section header (same pattern as Acquisition) ── */}
       <h3 className={styles.sectionTitle}>Quick Reports</h3>
 
-      {/* ── Table card ── */}
       <div className={styles.card}>
         {/* Filter bar */}
         <div className={styles.filterBar}>
@@ -205,9 +125,7 @@ export default function ReportsTable({ fromDate, toDate }) {
             ) : (
               <span className={styles.dateHint}>No date filter applied</span>
             )}
-            <span className={styles.countBadge}>
-              {filtered.length} / {RAW_DATA.length} records
-            </span>
+            <span className={styles.countBadge}>{total} records</span>
             <span className={styles.pageSizeBadge}>{PAGE_SIZE} per page</span>
           </div>
         </div>
@@ -228,39 +146,38 @@ export default function ReportsTable({ fromDate, toDate }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className={styles.empty}>
+                    Loading…
+                  </td>
+                </tr>
+              ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={8} className={styles.empty}>
                     No records match the current filters.
                   </td>
                 </tr>
               ) : (
-                pageRows.map((row) => {
-                  const rs = REGION_STYLE[row.region];
-                  const cs = CATEGORY_STYLE[row.category];
-                  const color = avatarColor(row.rep);
+                rows.map((row) => {
+                  const rs = REGION_STYLE[row.region] || {};
+                  const cs = CATEGORY_STYLE[row.category] || {};
+                  const color = avatarColor(row.salesRep);
                   return (
-                    <tr key={row.id} className={styles.row}>
-                      {/* Order ID */}
-                      <td className={styles.orderId}>#{row.id}</td>
-
-                      {/* Date */}
+                    <tr key={row.orderID} className={styles.row}>
+                      <td className={styles.orderId}>#{row.orderID}</td>
                       <td className={styles.date}>{row.date}</td>
-
-                      {/* Sales Rep */}
                       <td>
                         <div className={styles.repCell}>
                           <span
                             className={styles.avatar}
                             style={{ background: color }}
                           >
-                            {initials(row.rep)}
+                            {initials(row.salesRep)}
                           </span>
-                          <span className={styles.repName}>{row.rep}</span>
+                          <span className={styles.repName}>{row.salesRep}</span>
                         </div>
                       </td>
-
-                      {/* Region */}
                       <td>
                         <span
                           className={styles.regionBadge}
@@ -273,11 +190,7 @@ export default function ReportsTable({ fromDate, toDate }) {
                           {row.region}
                         </span>
                       </td>
-
-                      {/* Product */}
                       <td className={styles.product}>{row.product}</td>
-
-                      {/* Category */}
                       <td>
                         <span
                           className={styles.categoryBadge}
@@ -286,15 +199,11 @@ export default function ReportsTable({ fromDate, toDate }) {
                           {cs.label}
                         </span>
                       </td>
-
-                      {/* Sales Amount */}
                       <td className={`${styles.amount} ${styles.right}`}>
-                        {fmtAmount(row.amount)}
+                        {fmtAmount(row.salesAmount)}
                       </td>
-
-                      {/* Units */}
                       <td className={`${styles.units} ${styles.center}`}>
-                        {row.units}
+                        {row.unitsSold}
                       </td>
                     </tr>
                   );
@@ -306,14 +215,12 @@ export default function ReportsTable({ fromDate, toDate }) {
 
         {/* Footer: pagination + summary */}
         <div className={styles.footer}>
-          {/* Left — record info */}
           <span className={styles.footerInfo}>
-            {filtered.length === 0
+            {total === 0
               ? "No records"
-              : `Showing ${firstIdx}–${lastIdx} of ${filtered.length} records`}
+              : `Showing ${firstIdx}–${lastIdx} of ${total} records`}
           </span>
 
-          {/* Centre — page controls */}
           {totalPages > 1 && (
             <div className={styles.pagination}>
               <button
@@ -323,17 +230,24 @@ export default function ReportsTable({ fromDate, toDate }) {
               >
                 ‹
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+
+              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                // Show window of 7 pages centred around current page
+                const half = 3;
+                let start = Math.max(1, currentPage - half);
+                const end = Math.min(totalPages, start + 6);
+                start = Math.max(1, end - 6);
+                return start + i;
+              }).map((p) => (
                 <button
                   key={p}
-                  className={`${styles.pageBtn} ${
-                    p === currentPage ? styles.pageBtnActive : ""
-                  }`}
+                  className={`${styles.pageBtn} ${p === currentPage ? styles.pageBtnActive : ""}`}
                   onClick={() => setCurrentPage(p)}
                 >
                   {p}
                 </button>
               ))}
+
               <button
                 className={styles.pageArrow}
                 onClick={() => setCurrentPage((p) => p + 1)}
@@ -344,18 +258,13 @@ export default function ReportsTable({ fromDate, toDate }) {
             </div>
           )}
 
-          {/* Right — totals */}
-          {filtered.length > 0 && (
+          {total > 0 && (
             <div className={styles.footerTotals}>
               <span>
-                Total Sales:{" "}
-                <strong>
-                  {fmtAmount(filtered.reduce((s, r) => s + r.amount, 0))}
-                </strong>
+                Total Sales: <strong>{fmtAmount(totalSales)}</strong>
               </span>
               <span>
-                Units:{" "}
-                <strong>{filtered.reduce((s, r) => s + r.units, 0)}</strong>
+                Units: <strong>{totalUnits.toLocaleString()}</strong>
               </span>
             </div>
           )}

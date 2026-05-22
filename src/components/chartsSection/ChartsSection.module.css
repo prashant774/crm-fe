@@ -40,3 +40,12 @@
 .chartArea {
   width: 100%;
 }
+
+.loading {
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 13px;
+}

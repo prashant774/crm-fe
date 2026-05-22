@@ -6,15 +6,15 @@ React 18 single-page application for a CRM sales analytics dashboard. Connects t
 
 ## Tech Stack
 
-| Tool | Purpose |
-|------|---------|
-| React 18 | UI library |
-| Vite 5 | Build tool & dev server |
+| Tool          | Purpose                         |
+| ------------- | ------------------------------- |
+| React 18      | UI library                      |
+| Vite 5        | Build tool & dev server         |
 | Redux Toolkit | Global state (auth, active tab) |
-| react-redux | React bindings for Redux |
-| recharts | Chart components |
-| react-icons | Icon library (Feather icons) |
-| CSS Modules | Scoped component styles |
+| react-redux   | React bindings for Redux        |
+| recharts      | Chart components                |
+| react-icons   | Icon library (Feather icons)    |
+| CSS Modules   | Scoped component styles         |
 
 ---
 
@@ -53,6 +53,7 @@ frontend/
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - Backend API running on `http://localhost:5000` (see [backend README](../backend/README.md))
 
@@ -80,18 +81,21 @@ npm run preview   # Preview the production build locally
 ## Features
 
 ### Authentication
+
 - Login screen with email + password
 - Credentials validated against the backend (`POST /api/auth/login`)
 - Auth state persisted in Redux (`authSlice`)
 - Logout button in the sidebar clears the session
 
 **Demo credentials:**
+
 ```
 Email:    admin@crm.com
 Password: admin123
 ```
 
 ### Dashboard
+
 - **Date range filter** — From / To date pickers in the header; click ✓ to apply, ✗ to clear. All widgets (KPI cards, charts, table) re-fetch with the applied date range.
 - **Acquisition section** — 6 KPI cards (Total Orders, Total Sales, Units Sold, Leading Category, Leading Product, Leading Region) fetched from `/api/sales/kpi`
 - **Charts section** — 6 charts in a responsive 3-column grid:
@@ -110,16 +114,16 @@ Password: admin123
 
 All API calls are centralised in `src/services/api.js`. The base URL defaults to `http://localhost:5000/api`.
 
-| Export | Endpoint |
-|--------|----------|
-| `loginUser(email, password)` | `POST /auth/login` |
-| `fetchKPI(params)` | `GET /sales/kpi` |
-| `fetchByRegion(params)` | `GET /sales/by-region` |
-| `fetchByCategory(params)` | `GET /sales/by-category` |
-| `fetchTopProducts(params)` | `GET /sales/top-products` |
-| `fetchTrends(params)` | `GET /sales/trends` |
-| `fetchTopReps(params)` | `GET /sales/top-reps` |
+| Export                        | Endpoint                     |
+| ----------------------------- | ---------------------------- |
+| `loginUser(email, password)`  | `POST /auth/login`           |
+| `fetchKPI(params)`            | `GET /sales/kpi`             |
+| `fetchByRegion(params)`       | `GET /sales/by-region`       |
+| `fetchByCategory(params)`     | `GET /sales/by-category`     |
+| `fetchTopProducts(params)`    | `GET /sales/top-products`    |
+| `fetchTrends(params)`         | `GET /sales/trends`          |
+| `fetchTopReps(params)`        | `GET /sales/top-reps`        |
 | `fetchRegionCategory(params)` | `GET /sales/region-category` |
-| `fetchRaw(params)` | `GET /sales/raw` |
+| `fetchRaw(params)`            | `GET /sales/raw`             |
 
 All `GET` functions accept an optional `{ from, to, region, page, limit }` params object. Empty/null values are stripped before the request is sent.
